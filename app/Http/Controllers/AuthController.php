@@ -12,22 +12,28 @@ class AuthController extends Controller
 
     public function index()
     {
-        $allmember = User::all()->whereIn('hak_akses', ['member', 'kasir']);
+        $allmember = User::all()->whereIn('hak_akses', ['member', 'kasir', 'admin']);
         $member = User::all()->where('hak_akses', 'member');
         return view('pages.users', compact('allmember', 'member'));
     }
+
     public function login()
     {
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
         return view('login');
     }
 
     public function postlogin(Request $request)
     {
+        // ...validation...
+
         if (Auth::attempt($request->only('username', 'password'))) {
-            return redirect('/dashboard');
+            return redirect()->route('dashboard');
         }
 
-        return redirect('/login')->withErrors('Username atau Password salah');
+        return back()->with('error', 'Invalid credentials');
     }
 
     public function register()
@@ -47,7 +53,7 @@ class AuthController extends Controller
             'password' => bcrypt($request->password)
         ]);
 
-        return redirect('/login');
+        return redirect('/users');
     }
 
     public function logout()

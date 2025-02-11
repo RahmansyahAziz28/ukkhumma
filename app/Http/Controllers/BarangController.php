@@ -16,11 +16,14 @@ class BarangController extends Controller
     public function index()
     {
         //
+        $penjualan = DB::table('penjualans')->sum('total');
+        $pembelian = DB::table('pembelians')->sum('total');
+        $totalRevenue = $penjualan - $pembelian;
         $totalmember = User::all()->where('hak_akses', 'member')->count();
-        $totalorder = DB::table('penjualans')->where('status', 'belum selesai')->count();
+        $totalorder = DB::table('penjualans')->count();
         $barang = barang::all();
         $kategoris = kategori::all();
-        return view('pages.dashboard', compact('barang', 'kategoris'));
+        return view('pages.dashboard', compact('barang', 'kategoris', 'totalmember', 'totalorder', 'totalRevenue'));
     }
 
     /**
@@ -37,25 +40,32 @@ class BarangController extends Controller
     public function store(Request $request)
     {
         $request->merge(['berat' => str_replace(',','.', $request->berat)]);
-        //
+
         $request->validate([
             'id_kategori' => 'required',
             'nama_barang' => 'required',
             'detail_barang' => 'required',
-            'harga' => 'required',
             'berat' => 'required',
-            'foto' => 'required',
-            'stok' => 'required'
+            'harga_beli' => 'required|numeric|min:0',
+            'harga_jual' => 'required|numeric|min:0',
+            'foto' => 'required|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
+            'stok' => 'required|numeric|min:0'
         ],
         [
             'id_kategori.required' => 'Kategori harus diisi',
             'nama_barang.required' => 'Nama barang harus diisi',
             'detail_barang.required' => 'Detail barang harus diisi',
-            'harga.required' => 'Harga harus diisi',
             'berat.required' => 'Berat harus diisi',
-            'foto.mimes' => 'File ekstensi hanya bisa jpg,png,jpeg,gif, svg',
-            'foto.image' => 'File harus berbentuk image',
-            'stok.required' => 'Stok harus diisi'
+            'harga_beli.required' => 'Harga beli harus diisi',
+            'harga_beli.numeric' => 'Harga beli harus berupa angka',
+            'harga_jual.required' => 'Harga jual harus diisi',
+            'harga_jual.numeric' => 'Harga jual harus berupa angka',
+            'foto.required' => 'Foto harus diupload',
+            'foto.image' => 'File harus berupa gambar',
+            'foto.mimes' => 'Format foto harus jpg, png, jpeg, gif, atau svg',
+            'stok.required' => 'Stok harus diisi',
+            'stok.numeric' => 'Stok harus berupa angka',
+            'stok.min' => 'Stok minimal 0'
         ]);
 
         if (!empty($request->foto)) {
@@ -69,13 +79,68 @@ class BarangController extends Controller
             'id_kategori' => $request->id_kategori,
             'nama_barang' => $request->nama_barang,
             'detail_barang' => $request->detail_barang,
-            'harga' => $request->harga,
+            'harga_jual' => $request->harga_jual ?? 0,
+            'harga_beli' => $request->harga_beli ?? 0,
             'berat'=> $request->berat,
             'foto'=> $fileName,
-            'stok' => $request->stok
+            'stok' => $request->stok ?? 0
         ]);
 
         return redirect('/dashboard')->with('success', 'Data barang berhasil ditambahkan');
+    }
+
+    public function new(Request $request)
+    {
+        $request->merge(['berat' => str_replace(',', '.', $request->berat)]);
+
+        $request->validate(
+            [
+                'id_kategori' => 'required',
+                'nama_barang' => 'required',
+                'detail_barang' => 'required',
+                'berat' => 'required',
+                'harga_beli' => 'required|numeric|min:0',
+                'harga_jual' => 'required|numeric|min:0',
+                'foto' => 'required|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
+                'stok' => 'required|numeric|min:0'
+            ],
+            [
+                'id_kategori.required' => 'Kategori harus diisi',
+                'nama_barang.required' => 'Nama barang harus diisi',
+                'detail_barang.required' => 'Detail barang harus diisi',
+                'berat.required' => 'Berat harus diisi',
+                'harga_beli.required' => 'Harga beli harus diisi',
+                'harga_beli.numeric' => 'Harga beli harus berupa angka',
+                'harga_jual.required' => 'Harga jual harus diisi',
+                'harga_jual.numeric' => 'Harga jual harus berupa angka',
+                'foto.required' => 'Foto harus diupload',
+                'foto.image' => 'File harus berupa gambar',
+                'foto.mimes' => 'Format foto harus jpg, png, jpeg, gif, atau svg',
+                'stok.required' => 'Stok harus diisi',
+                'stok.numeric' => 'Stok harus berupa angka',
+                'stok.min' => 'Stok minimal 0'
+            ]
+        );
+
+        if (!empty($request->foto)) {
+            $fileName = 'foto-' . uniqid() . '.' . $request->foto->extension();
+            $request->foto->move(public_path('image'), $fileName);
+        } else {
+            $fileName = '';
+        }
+
+        DB::table('barangs')->insert([
+            'id_kategori' => $request->id_kategori,
+            'nama_barang' => $request->nama_barang,
+            'detail_barang' => $request->detail_barang,
+            'harga_jual' => $request->harga_jual ?? 0,
+            'harga_beli' => $request->harga_beli ?? 0,
+            'berat' => $request->berat,
+            'foto' => $fileName,
+            'stok' => $request->stok ?? 0
+        ]);
+
+        return redirect('/pembelian')->with('success', 'Data barang berhasil ditambahkan');
     }
 
     /**
@@ -101,16 +166,17 @@ class BarangController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // dd($request);
         $request->merge(['berat' => str_replace(',','.', $request->berat)]);
 
         $request->validate([
             'id_kategori' => 'required',
             'nama_barang' => 'required',
             'detail_barang' => 'required',
-            'harga' => 'required',
+            'harga_beli' => 'required',
+            'harga_jual' => 'required',
             'berat' => 'required',
             'foto' => 'image|mimes:jpg,png,jpeg,gif,svg|max:2048',
-            'stok' => 'required'
         ]);
 
         $barang = barang::findOrFail($id);
@@ -130,10 +196,11 @@ class BarangController extends Controller
             'id_kategori' => $request->id_kategori,
             'nama_barang' => $request->nama_barang,
             'detail_barang' => $request->detail_barang,
-            'harga' => $request->harga,
+            'harga_beli' => $request->harga_beli,
+            'harga_jual' => $request->harga_jual,
             'berat' => $request->berat,
             'foto' => $fileName,
-            'stok' => $request->stok
+
         ]);
 
         return redirect('/dashboard')->with('success', 'Data barang berhasil diupdate');

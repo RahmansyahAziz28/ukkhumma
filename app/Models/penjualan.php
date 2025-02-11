@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class penjualan extends Model
 {
@@ -17,9 +18,14 @@ class penjualan extends Model
         'total',
         'no_resi'
     ];
-
-    public function member(){
-        return $this->belongsTo('App\Models\user', 'id');
+    /**
+     * Get the user that owns the penjualan
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function member(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'id_member','id');
     }
 
     public function penjualan_detail(){

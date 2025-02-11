@@ -40,7 +40,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($penjualans as $index => $penjualan)
+                                    @foreach (Auth::user()->hak_akses == 'member' ? $historymember : $penjualans as $index => $penjualan)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             <td>{{ $penjualan->member->username }}</td>
@@ -135,13 +135,13 @@
                                             <option value="" data-price="0">-- Pilih Barang --</option>
                                             @foreach ($barangs as $barang)
                                                 <option value="{{ $barang->nama_barang }}"
-                                                    data-price="{{ $barang->harga }}">
+                                                    data-price="{{ $barang->harga_jual }}">
                                                     {{ $barang->nama_barang }} - Rp
-                                                    {{ number_format($barang->harga, 0, ',', '.') }}
+                                                    {{ number_format($barang->harga_jual, 0, ',', '.') }}
                                                 </option>
                                             @endforeach
                                         </select>
-                                        <input type="hidden" class="harga-input" name="items[0][harga]">
+                                        <input type="hidden" class="harga_jual-input" name="items[0][harga_jual]">
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Jumlah</label>
@@ -206,12 +206,12 @@
                         <select class="form-select item-select" name="items[${itemCount}][nama_barang]" required onchange="updatePrice(this)">
                             <option value="" data-price="0">-- Pilih Barang --</option>
                             @foreach ($barangs as $barang)
-                                <option value="{{ $barang->nama_barang }}" data-price="{{ $barang->harga }}">
-                                    {{ $barang->nama_barang }} - Rp {{ number_format($barang->harga, 0, ',', '.') }}
+                                <option value="{{ $barang->nama_barang }}" data-price="{{ $barang->harga_jual }}">
+                                    {{ $barang->nama_barang }} - Rp {{ number_format($barang->harga_jual, 0, ',', '.') }}
                                 </option>
                             @endforeach
                         </select>
-                        <input type="hidden" class="harga-input" name="items[${itemCount}][harga]">
+                        <input type="hidden" class="harga_jual-input" name="items[${itemCount}][harga_jual]">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Jumlah</label>
@@ -244,7 +244,7 @@
         }
 
         function updatePrice(select) {
-            select.closest(".item-group").querySelector(".harga-input").value = select.selectedOptions[0].dataset.price;
+            select.closest(".item-group").querySelector(".harga_jual-input").value = select.selectedOptions[0].dataset.price;
             calculateTotal();
         }
     </script>

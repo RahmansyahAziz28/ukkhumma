@@ -18,8 +18,7 @@ class PenjualanDetailController extends Controller
     {
         //
         $barang = barang::all();
-        $penjualan = penjualan_detail::all()
-        ->where('id_penjualan', $id);
+        $penjualan = penjualan_detail::all();
         return view('pages.penjualan_detail', compact('penjualan', 'barang'));
 
     }

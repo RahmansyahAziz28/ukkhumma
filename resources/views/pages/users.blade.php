@@ -18,13 +18,14 @@
                 <div class="card">
                     <div class="card-header bg-primary d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 text-white">
-                            @if(Auth::user()->hak_akses == 'admin')
+                            @if (Auth::user()->hak_akses == 'admin' || Auth::user()->hak_akses == 'pimpinan')
                                 Daftar Semua Users
                             @else
                                 Daftar Member
                             @endif
                         </h5>
-                        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#addUserModal">
                             <i class="fas fa-plus"></i> Tambah User
                         </button>
                     </div>
@@ -38,40 +39,44 @@
                                         <th>Email</th>
                                         <th>No. Telp</th>
                                         <th>Alamat</th>
-                                        @if(Auth::user()->hak_akses == 'admin')
+                                        @if (Auth::user()->hak_akses == 'admin' || Auth::user()->hak_akses == 'pimpinan')
                                             <th>Role</th>
                                         @endif
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ((Auth::user()->hak_akses == 'admin' ? $allmember : $member) as $index => $user)
-                                    <tr>
-                                        <td>{{ $index + 1 }}</td>
-                                        <td>{{ $user->username }}</td>
-                                        <td>{{ $user->email }}</td>
-                                        <td>{{ $user->no_telp }}</td>
-                                        <td>{{ $user->alamat }}</td>
-                                        @if(Auth::user()->hak_akses == 'admin')
+                                    @foreach (Auth::user()->hak_akses == 'admin' || Auth::user()->hak_akses == 'pimpinan' ? $allmember : $member as $index => $user)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $user->username }}</td>
+                                            <td>{{ $user->email }}</td>
+                                            <td>{{ $user->no_telp }}</td>
+                                            <td>{{ $user->alamat }}</td>
+                                            @if (Auth::user()->hak_akses == 'admin' || Auth::user()->hak_akses == 'pimpinan')
+
+                                                <td>
+                                                    <span
+                                                        class="badge bg-{{ $user->hak_akses == 'admin' ? 'danger' : ($user->hak_akses == 'kasir' ? 'warning' : 'info') }}">
+                                                        {{ ucfirst($user->hak_akses) }}
+                                                    </span>
+                                                </td>
+                                            @endif
+                                            @if (Auth::user()->hak_akses == 'admin' || Auth::user()->hak_akses == 'pimpinan')
                                             <td>
-                                                <span class="badge bg-{{ $user->hak_akses == 'admin' ? 'danger' : ($user->hak_akses == 'kasir' ? 'warning' : 'info') }}">
-                                                    {{ ucfirst($user->hak_akses) }}
-                                                </span>
+                                                    <div class="btn-group">
+                                                        <button class="btn btn-sm btn-warning"
+                                                            onclick="editUser({{ $user->id }})" title="Edit">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-danger"
+                                                            onclick="deleteUser({{ $user->id }})" title="Delete">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
                                             </td>
-                                        @endif
-                                        <td>
-                                            <div class="btn-group">
-                                                <button class="btn btn-sm btn-warning" onclick="editUser({{ $user->id }})" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                @if(Auth::user()->hak_akses == 'admin')
-                                                <button class="btn btn-sm btn-danger" onclick="deleteUser({{ $user->id }})" title="Delete">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                                @endif
-                                            </div>
-                                        </td>
-                                    </tr>
+                                            @endif
+                                        </tr>
                                     @endforeach
                                 </tbody>
                             </table>
@@ -89,7 +94,7 @@
                     <h5 class="modal-title">Tambah User</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form action="{{ route('register') }}" method="POST">
+                <form action="{{ route('register.post') }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">
@@ -112,14 +117,23 @@
                             <label class="form-label">Alamat</label>
                             <textarea class="form-control" name="alamat" required></textarea>
                         </div>
-                        @if (Auth::user()->hak_akses == 'admin')
-                        <div class="mb-3">
-                            <label class="form-label">Role</label>
-                            <select class="form-select" name="role" required>
-                                <option value="member">Member</option>
-                                <option value="kasir">Kasir</option>
-                            </select>
-                        </div>
+                            @if (Auth::user()->hak_akses == 'admin')
+                            <div class="mb-3">
+                                <label class="form-label">Role</label>
+                                <select class="form-select" name="role" required>
+                                    <option value="member">member</option>
+                                    <option value="kasir">kasir</option>
+                                </select>
+                            </div>
+                            @else
+                              <div class="mb-3">
+                                <label class="form-label">Role</label>
+                                <select class="form-select" name="role" required>
+                                    <option value="member">member</option>
+                                    <option value="kasir">kasir</option>
+                                    <option value="admin">admin</option>
+                                </select>
+                            </div>
                         @endif
                     </div>
                     <div class="modal-footer">

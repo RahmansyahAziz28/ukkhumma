@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\barang;
+use App\Models\kategori;
 use App\Models\pembelian;
 use App\Models\supplier;
 use Illuminate\Http\Request;
@@ -15,10 +16,11 @@ class PembelianController extends Controller
     public function index()
     {
         //
+        $kategoris = kategori::all();
         $pembelian = pembelian::all();
         $suppliers = supplier::all();
         $barangs = barang::all();
-        return view('pages.pembelian', compact('pembelian', 'suppliers', 'barangs'));
+        return view('pages.pembelian', compact('pembelian', 'suppliers', 'barangs', 'kategoris'));
     }
 
     /**

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('harga_jual')->nullable();
             $table->integer('harga_beli')->nullable();
             $table->longText('foto');
-            $table->integer('stok');
+            $table->integer('stok')->default(0);
             $table->timestamps();
         });
     }

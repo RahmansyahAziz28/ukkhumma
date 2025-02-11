@@ -6,6 +6,7 @@ use App\Models\barang;
 use App\Models\Penjualan;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PenjualanController extends Controller
 {
@@ -16,8 +17,9 @@ class PenjualanController extends Controller
     {
         $penjualans = Penjualan::all();
         $barangs = barang::all();
-        $members = User::all()->where('hak_akses', 'member');
-        return view('pages.penjualan', compact('penjualans', 'members', 'barangs'));
+        $historymember = penjualan::all()->where('id_member', Auth::user()->id);
+        $members = User::all();
+        return view('pages.penjualan', compact('penjualans', 'members', 'barangs', 'historymember'));
     }
 
     /**
@@ -33,7 +35,7 @@ class PenjualanController extends Controller
      */
     public function store(Request $request)
     {
-      
+
     }
 
     /**
