@@ -108,8 +108,8 @@
                                 @foreach ($barang ?? [] as $k)
                                     <tr>
                                         <td>{{ $k->id }}</td>
-                                        <td>{{ $k->nama_barang }}</td>
-                                        <td>{{ $k->detail_barang }}</td>
+                                        <td>{{ $k->nama_barang }} ({{ $k->kategori->nama_kategori }})</td>
+                                        <td>{{ $k->detail_barang }} - {{ $k->berat }}g</td>
                                         <td>Rp {{ number_format($k->harga_jual) }}</td>
                                         <td>{{ $k->stok }}</td>
                                         <td>

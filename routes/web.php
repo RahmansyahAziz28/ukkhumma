@@ -25,8 +25,6 @@ Route::delete('/users/{user}', [AuthController::class, 'destroy'])->name('users.
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [BarangController::class, 'index'])->name('dashboard');
 
-
-
     Route::middleware(['role:member'])->group(function () {
         Route::get('/history', [PenjualanController::class, 'index'])->name('history');
         Route::get('/penjualan/details/{id}', [PenjualanDetailController::class, 'index'])->name('penjualan.detail');

@@ -16,6 +16,7 @@ class BarangController extends Controller
     public function index()
     {
         //
+
         $penjualan = DB::table('penjualans')->sum('total');
         $pembelian = DB::table('pembelians')->sum('total');
         $totalRevenue = $penjualan - $pembelian;

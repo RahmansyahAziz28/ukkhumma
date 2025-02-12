@@ -53,17 +53,24 @@
                                                     alt="Bukti Bayar" class="img-thumbnail" style="max-width: 100px;">
                                             </td>
                                             <td>
-                                                <span
-                                                    class="badge bg-{{ $penjualan->status === 'Dipesan'
-                                                        ? 'warning'
-                                                        : ($penjualan->status === 'Dikirim'
-                                                            ? 'info'
-                                                            : ($penjualan->status === 'Diterima'
-                                                                ? 'success'
-                                                                : 'danger')) }}">
-                                                    {{ $penjualan->status }}
-                                                </span>
+                                                <select class="form-select status-select" data-id="{{ $penjualan->id }}"
+                                                    onchange="updateStatus(this)">
+                                                    <option value="Dipesan"
+                                                        {{ $penjualan->status == 'Dipesan' ? 'selected' : '' }}>Dipesan
+                                                    </option>
+                                                    <option value="Dikirim"
+                                                        {{ $penjualan->status == 'Dikirim' ? 'selected' : '' }}>Dikirim
+                                                    </option>
+                                                    <option value="Diterima"
+                                                        {{ $penjualan->status == 'Diterima' ? 'selected' : '' }}>
+                                                        Diterima</option>
+                                                    <option value="Dibatalkan"
+                                                        {{ $penjualan->status == 'Dibatalkan' ? 'selected' : '' }}>
+                                                        Dibatalkan</option>
+                                                </select>
                                             </td>
+
+
                                             <td>{{ $penjualan->no_resi ?: '-' }}</td>
                                             <td>
                                                 <div class="flex flex-row">
@@ -73,9 +80,7 @@
                                                             <span class="fs-6">Detail</span>
                                                         </i>
                                                     </a>
-                                                    <button class="btn btn-sm btn-info" title="Edit">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
+
                                                 </div>
                                             </td>
                                         </tr>
@@ -135,9 +140,11 @@
                                             <option value="" data-price="0">-- Pilih Barang --</option>
                                             @foreach ($barangs as $barang)
                                                 <option value="{{ $barang->nama_barang }}"
-                                                    data-price="{{ $barang->harga_jual }}">
-                                                    {{ $barang->nama_barang }} - Rp
-                                                    {{ number_format($barang->harga_jual, 0, ',', '.') }}
+                                                    data-price="{{ $barang->harga_jual }}"
+                                                    data-stock="{{ $barang->stok }}">
+                                                    {{ $barang->nama_barang }} -
+                                                    Rp{{ number_format($barang->harga_jual, 0, ',', '.') }} -
+                                                    Stok:{{ $barang->stok }} pcs
                                                 </option>
                                             @endforeach
                                         </select>
@@ -149,7 +156,8 @@
                                             name="items[0][jumlah_jual]" required oninput="calculateTotal()">
                                     </div>
                                     <div class="col-md-2 d-flex align-items-end">
-                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                            onclick="removeItem(this)">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
@@ -236,15 +244,37 @@
         function calculateTotal() {
             let total = 0;
             document.querySelectorAll(".item-group").forEach(item => {
-                let price = parseFloat(item.querySelector(".item-select").selectedOptions[0].dataset.price);
-                let qty = parseInt(item.querySelector(".qty-input").value) || 0;
+                let select = item.querySelector(".item-select");
+                let price = parseFloat(select.selectedOptions[0].dataset.price);
+                let qtyInput = item.querySelector(".qty-input");
+                let stock = parseInt(select.selectedOptions[0].dataset.stock) || 0;
+
+                let qty = parseInt(qtyInput.value) || 0;
+                if (qty > stock) {
+                    alert(`Stok tidak mencukupi! Stok tersedia: ${stock}`);
+                    qtyInput.value = stock;
+                    qty = stock;
+                }
+
                 total += price * qty;
             });
             document.getElementById("totalPrice").innerText = total.toLocaleString();
         }
 
         function updatePrice(select) {
-            select.closest(".item-group").querySelector(".harga_jual-input").value = select.selectedOptions[0].dataset.price;
+            let stock = parseInt(select.selectedOptions[0].dataset.stock) || 0;
+            let qtyInput = select.closest(".item-group").querySelector(".qty-input");
+            let priceInput = select.closest(".item-group").querySelector(".harga_jual-input");
+
+            priceInput.value = select.selectedOptions[0].dataset.price;
+
+            if (stock === 0) {
+                alert("Barang ini sedang kosong, silakan pilih barang lain.");
+                select.value = "";
+                priceInput.value = 0;
+                qtyInput.value = 0;
+            }
+
             calculateTotal();
         }
     </script>

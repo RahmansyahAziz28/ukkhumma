@@ -241,7 +241,7 @@
                             <div class="item-group">
                                 <label class="form-label">Barang</label>
                                 <div class="d-flex align-items-center w-100">
-                                    <select class="form-control item-select flex-grow-1" name="items[0][nama_barang]"
+                                <select class="form-control item-select flex-grow-1" name="items[0][nama_barang]"
                                         required onchange="updatePrice(this)">
                                         <option value="" data-price="0">-- Pilih Barang --</option>
                                         @foreach ($barangs as $barang)
